@@ -41,6 +41,8 @@ Resolve logical model profiles from the local user profile. Keep agent logic por
 
 - Before proposing or writing changes, check compliance with Section 2 and Section 4.
 - Before completing a change, verify affected outbound data paths and exercise affected model selection and fallback paths.
+- After completing any task and passing verification, always output a ready-to-copy Git commit command at the end of your response using Conventional Commits format (e.g., `git add . && git commit -m "feat: ..."`).
+
 
 ## 7. Project structure & conventions
 

@@ -1,9 +1,35 @@
 @import "tailwindcss";
-
-:root {
-  color-scheme: light;
-}
-
-body {
-  margin: 0;
+:root { color-scheme: dark; }
+body { margin: 0; }
+button { cursor: pointer; }
+button:disabled { cursor: wait; opacity: .5; }
+button:focus-visible, a:focus-visible { outline: 2px solid #22d3ee; outline-offset: 4px; }
+.dashboard-shell { display: flex; min-height: 100vh; }
+.sidebar { width: 250px; flex-shrink: 0; padding: 32px 20px; border-right: 1px solid #1e293b; background: #0b1120; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+.brand { font-size: 23px; font-weight: 700; letter-spacing: -1px; }
+.brand span { color: #22d3ee; }
+.nav-button { text-align: left; border: 1px solid transparent; border-radius: 8px; padding: 12px; font-size: 13px; color: #94a3b8; }
+.nav-button:hover { background: #172033; color: #e2e8f0; }
+.nav-active { background: #083344; color: #67e8f9; border-color: #155e75; }
+.dashboard-main { flex: 1; min-width: 0; max-width: 1800px; padding: 32px; }
+.primary-button, .secondary-button { border-radius: 8px; padding: 11px 16px; font-size: 13px; font-weight: 600; }
+.primary-button { background: #22d3ee; color: #083344; border: 1px solid #22d3ee; }
+.primary-button:hover { background: #67e8f9; }
+.secondary-button { background: #0f172a; border: 1px solid #334155; color: #e2e8f0; }
+.secondary-button:hover { background: #1e293b; }
+.status-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; }
+.status-grid > div { border: 1px solid #1e293b; border-radius: 10px; padding: 12px 16px; background: #0f172a; }
+.status-grid p { font-size: 11px; color: #94a3b8; margin-bottom: 4px; }
+.status-grid strong { font-size: 13px; font-weight: 500; }
+.privacy-view > section { max-width: 1100px; }
+.privacy-blocked { display: inline-block; width: 48%; vertical-align: top; margin-right: 3%; }
+.privacy-allowed { display: inline-block; width: 48%; vertical-align: top; }
+@media (max-width: 900px) {
+.dashboard-shell { flex-direction: column; }
+.sidebar { position: static; height: auto; width: 100%; padding: 20px; border-right: 0; border-bottom: 1px solid #1e293b; }
+.sidebar nav { margin-top: 16px; flex-direction: row; flex-wrap: wrap; }
+.sidebar > div:last-child { display: none; }
+.dashboard-main { padding: 24px 20px; }
+.status-grid { grid-template-columns: 1fr; }
+.privacy-blocked, .privacy-allowed { display: block; width: 100%; }
 }

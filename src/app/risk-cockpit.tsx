@@ -31,6 +31,7 @@ type ModelRouting = ReturnType<typeof resolveModelRouting>;
 const INITIAL_ROUTING = resolveModelRouting({});
 
 export function RiskCockpit() {
+  const [view, setView] = useState("Radar Overview");
   const [query, setQuery] = useState<string[]>([]);
   const [blockedFields, setBlockedFields] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<AgentStatuses>(
@@ -102,6 +103,7 @@ export function RiskCockpit() {
     setRouting(safeRouting);
     setProfileLabel(label);
     setStatuses(initialAgentStatuses());
+    setAlerts([]);
 
     const result = await runDemoOrchestration(
       safeQuery,
@@ -131,26 +133,66 @@ export function RiskCockpit() {
   const models = getAgentModelRoutes(routing);
   const hasProfile = profileLabel !== null;
 
+  const views = ["Radar Overview", "Privacy & Profile Inspector", "Agents & Otari Routing", "How It Works"];
+  const completed = Object.values(statuses).filter((status) => status === "complete").length;
   return (
-    <section className="space-y-5">
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-cyan-900/70 bg-cyan-950/30 px-4 py-3">
-        <div>
-          <p className="text-sm font-semibold text-cyan-100">
-            LOCAL DEMO MODE
-          </p>
-          <p className="mt-1 text-xs text-cyan-100/70">
-            No provider key is configured. Agents run on local demo data; no
-            profile or model request is sent.
-          </p>
-        </div>
-        <span className="rounded-full border border-cyan-800 px-3 py-1 text-xs text-cyan-200">
-          Zero-Upload enabled
-        </span>
-      </div>
+    <div className="dashboard-shell">
+      <aside className="sidebar">
+        <button type="button" onClick={() => setView("Radar Overview")} className="brand text-left">Local<span>Sentinel</span></button>
+        <p className="mt-2 text-xs text-slate-500">Infrastructure risk radar</p>
+        <nav aria-label="Main navigation" className="mt-10 flex flex-col gap-2">{views.map((item) => <button key={item} type="button" className={view === item ? "nav-button nav-active" : "nav-button"} aria-current={view === item ? "page" : undefined} onClick={() => setView(item)}>{item}</button>)}</nav>
+        <div className="mt-auto pt-10 text-xs leading-6 text-slate-500"><p className="text-emerald-400">Zero-Upload architecture</p><p>Static browser runtime</p><p>Open Agentic Web Challenge</p></div>
+      </aside>
+      <main className="dashboard-main">
+        <header className="mb-6 flex flex-wrap justify-between gap-3"><div><p className="mb-2 text-xs uppercase tracking-widest text-cyan-400">LocalSentinel workspace</p><h1 className="text-3xl font-semibold tracking-tight">{view}</h1></div><span className="h-fit rounded-full border border-cyan-900 bg-cyan-950/40 px-3 py-2 text-xs text-cyan-200">Local demo mode</span></header>
+        <p className="mb-5 text-xs text-slate-400">Agents use local demo snapshots. All profile processing stays in this browser.</p>
+        {errorMessage && <p className="mb-4 rounded-lg border border-red-900 p-3 text-sm text-red-200" role="alert">{errorMessage}</p>}
+        {view === "Radar Overview" && <section>
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-4"><p className="text-sm text-slate-400">Discover the risks that match your stack.</p><div className="flex flex-wrap gap-3"><button className="primary-button" type="button" disabled={isLoading} onClick={() => void loadDemoProfile()}>{isLoading ? "Running local radar..." : "Run 1-Click Demo Radar"}</button><button className="secondary-button" type="button" disabled={isLoading} onClick={() => void chooseProfile()}>Load Local Profile</button></div></div>
+          <div className="status-grid mb-5" aria-live="polite">
+            <div><p>Privacy Status</p><strong>Zero-Upload Active - {blockedFields.length} sensitive field categories blocked</strong></div>
+            <div><p>Agents Status</p><strong>{isLoading ? "Scanning..." : completed + "/3 Completed"}</strong></div>
+            <div><p>Active Alerts Count</p><strong>{alerts.length}</strong></div>
+          </div>
+        <Panel eyebrow="Provenance required" title="Prioritized alerts">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-sm text-slate-400">
+              {hasProfile
+                ? `${alerts.length} stack-matched demo alert${alerts.length === 1 ? "" : "s"}`
+                : "Waiting for a loaded stack"}
+            </p>
+            <span className="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] uppercase tracking-wider text-slate-400">
+              Severity sorted
+            </span>
+          </div>
 
-      <div className="grid items-start gap-4 xl:grid-cols-[1.05fr_1fr_1.2fr]">
-        <Panel
-          eyebrow="01 / LOCAL ONLY"
+          <div aria-live="polite" className="mt-4 grid gap-3 xl:grid-cols-3">
+            {alerts.map((alert) => (
+              <AlertCard alert={alert} key={alert.id} />
+            ))}
+            {hasProfile && alerts.length === 0 && (
+              <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">
+                No demo CVEs or provider incidents matched the loaded
+                technologies.
+              </div>
+            )}
+            {!hasProfile && (
+              <div className="rounded-lg border border-dashed border-slate-800 p-4 text-sm leading-6 text-slate-500">
+                Load the demo profile to see stack-filtered CVEs and a resolved
+                cloud incident. Demo records link to their official sources.
+              </div>
+            )}
+          </div>
+
+          <p className="mt-4 text-[11px] leading-5 text-slate-500">
+            Demo records are illustrative snapshots, not live status checks.
+            Always verify the linked advisory or provider notice.
+          </p>
+        </Panel>
+
+        </section>}
+        {view === "Privacy & Profile Inspector" && <div className="privacy-view">        <Panel
+          eyebrow="Local only"
           title="Inventory & privacy shield"
         >
           <p className="text-sm leading-6 text-slate-400">
@@ -165,7 +207,7 @@ export function RiskCockpit() {
               onClick={() => void loadDemoProfile()}
               type="button"
             >
-              Load Demo Profile
+              Run 1-Click Demo Radar
             </button>
             <button
               className="rounded-lg border border-slate-700 bg-slate-800 px-3 py-2 text-sm font-semibold text-slate-100 transition hover:bg-slate-700 disabled:cursor-wait disabled:opacity-50"
@@ -173,7 +215,7 @@ export function RiskCockpit() {
               onClick={() => void chooseProfile()}
               type="button"
             >
-              Choose profile
+              Load Local Profile
             </button>
           </div>
 
@@ -195,7 +237,7 @@ export function RiskCockpit() {
             </p>
           )}
 
-          <div className="mt-6 border-t border-slate-800 pt-5">
+          <div className="privacy-blocked mt-6 border-t border-slate-800 pt-5">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-slate-200">
                 Sensitive fields blocked
@@ -227,7 +269,7 @@ export function RiskCockpit() {
             )}
           </div>
 
-          <div className="mt-5 rounded-lg border border-emerald-900/80 bg-emerald-950/30 p-3">
+          <div className="privacy-allowed mt-5 rounded-lg border border-emerald-900/80 bg-emerald-950/30 p-3">
             <div className="flex items-center justify-between gap-3">
               <h3 className="text-sm font-semibold text-emerald-200">
                 Exact sanitized query
@@ -255,9 +297,10 @@ export function RiskCockpit() {
           )}
         </Panel>
 
-        <Panel
-          eyebrow="02 / PARALLEL NETWORK"
-          title="Cognizant Neuro SAN"
+</div>}
+        {view === "Agents & Otari Routing" && <div className="agents-view">        <Panel
+          eyebrow="Parallel network"
+          title="Cognizant Neuro? SAN"
         >
           <div className="flex items-center justify-between gap-3">
             <p className="text-sm text-slate-400">{MODEL_GATEWAY_NAME} routing</p>
@@ -266,6 +309,7 @@ export function RiskCockpit() {
             </span>
           </div>
 
+          <p className="mt-4 text-xs leading-5 text-slate-400">Cloud Status Agent + CVE Agent run in parallel, then feed the Synthesizer Agent.</p>
           <div className="mt-4 space-y-3">
             <AgentCard
               name="Cloud Status Agent"
@@ -319,43 +363,10 @@ export function RiskCockpit() {
           </p>
         </Panel>
 
-        <Panel eyebrow="03 / PROVENANCE REQUIRED" title="Traceable alerts">
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-sm text-slate-400">
-              {hasProfile
-                ? `${alerts.length} stack-matched demo alert${alerts.length === 1 ? "" : "s"}`
-                : "Waiting for a loaded stack"}
-            </p>
-            <span className="rounded-full border border-slate-700 px-2.5 py-1 text-[10px] uppercase tracking-wider text-slate-400">
-              Severity sorted
-            </span>
-          </div>
-
-          <div aria-live="polite" className="mt-4 space-y-3">
-            {alerts.map((alert) => (
-              <AlertCard alert={alert} key={alert.id} />
-            ))}
-            {hasProfile && alerts.length === 0 && (
-              <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">
-                No demo CVEs or provider incidents matched the loaded
-                technologies.
-              </div>
-            )}
-            {!hasProfile && (
-              <div className="rounded-lg border border-dashed border-slate-800 p-4 text-sm leading-6 text-slate-500">
-                Load the demo profile to see stack-filtered CVEs and a resolved
-                cloud incident. Demo records link to their official sources.
-              </div>
-            )}
-          </div>
-
-          <p className="mt-4 text-[11px] leading-5 text-slate-500">
-            Demo records are illustrative snapshots, not live status checks.
-            Always verify the linked advisory or provider notice.
-          </p>
-        </Panel>
-      </div>
-    </section>
+<p className="mt-4 text-sm leading-6 text-slate-400">The gateway utility retries provider-unavailable and rate-limit failures with the configured default model and the same sanitized query. Other errors surface to the caller. Live provider invocation and API key configuration are currently unavailable in this demo runtime.</p></div>}
+        {view === "How It Works" && <div className="grid gap-5 lg:grid-cols-2"><Panel eyebrow="Zero-Upload architecture" title="Your inventory stays local"><p className="text-sm leading-7 text-slate-400">Load a synthetic demo or choose infra-profile.json using the browser?s File System Access API. The local sanitizer constructs a query from explicitly allowed technology names, versions, and regions, and validates each value. Inspect blocked field categories and the exact query in Privacy &amp; Profile Inspector.</p></Panel><Panel eyebrow="Open web provenance" title="Every alert keeps its evidence"><p className="text-sm leading-7 text-slate-400">Cloud Status Agent and CVE Agent execute in parallel. The Synthesizer Agent combines their results, keeps stack-matched alerts with public source URLs, and sorts them by severity. Demo records are historical snapshots with clickable official advisories and provider notices. Review model profiles and fallback configuration in Agents &amp; Otari Routing.</p></Panel></div>}
+      </main>
+    </div>
   );
 }
 
@@ -479,4 +490,4 @@ function AlertCard({ alert }: { alert: RadarAlert }) {
       </div>
     </article>
   );
-}
+}
