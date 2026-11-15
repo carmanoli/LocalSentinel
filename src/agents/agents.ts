@@ -1,4 +1,5 @@
 import { DEMO_ALERTS, hasTraceableSource, sortAlertsBySeverity } from "@/agents/demo-alerts";
+import { matchCveVersions } from "@/agents/version-matching";
 import type { RadarAlert } from "@/agents/types";
 
 export async function runCloudStatusAgent(
@@ -12,7 +13,9 @@ export async function runCveAgent(
   query: readonly string[],
 ): Promise<RadarAlert[]> {
   await waitForDemoStage();
-  return filterAlerts(query, "cve");
+  return DEMO_ALERTS.filter((alert) => alert.kind === "cve")
+    .map((alert) => matchCveVersions(alert, query))
+    .filter((alert): alert is RadarAlert => alert !== null);
 }
 
 export async function runSynthesizerAgent(

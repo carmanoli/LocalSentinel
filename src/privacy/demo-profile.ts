@@ -6,7 +6,7 @@ export function createDemoProfile(): InfrastructureProfile {
       { name: "AWS", region: "eu-west-1" },
       { name: "Azure", region: "westeurope" },
       { name: "Ubuntu", version: "24.04" },
-      { name: "Next.js", version: "15" },
+      { name: "Next.js", version: "15.5.27" },
     ],
     internal_hostname: "prod-web-01.internal",
     private_ip: "10.0.14.22",

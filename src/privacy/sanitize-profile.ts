@@ -57,11 +57,11 @@ export function sanitizeProfileForQuery(profile: unknown): string[] {
       TECHNOLOGY_NAME_PATTERN,
       `Technology entry ${index + 1} has an invalid name.`,
     );
-    const version = validateOptionalField(
-      entry.version,
-      VERSION_PATTERN,
-      `Technology entry ${index + 1} has an invalid version.`,
-    );
+    // Invalid versions stay out of the query; the CVE agent marks the name-only entry unverified.
+    const version = typeof entry.version === "string" &&
+      entry.version.trim().length <= 64 && VERSION_PATTERN.test(entry.version.trim())
+      ? entry.version.trim()
+      : undefined;
     const region = validateOptionalField(
       entry.region,
       REGION_PATTERN,

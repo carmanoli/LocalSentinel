@@ -3,11 +3,15 @@ import type { AlertSeverity, RadarAlert } from "@/agents/types";
 export const DEMO_ALERTS: readonly RadarAlert[] = [
   {
     id: "CVE-2026-96889",
+    affectedRanges: [
+      { lower: { version: "10.0.0", inclusive: true }, upper: { version: "15.5.27", inclusive: true } },
+      { lower: { version: "16.0.0", inclusive: false }, upper: { version: "16.4.0", inclusive: true } },
+    ],
     kind: "cve",
     severity: "critical",
     title: "RCE in Next.js image optimization with SVG files",
     summary:
-      "The official advisory lists Next.js through 15.5.27 as affected and 15.5.28 as patched. Verify the exact deployed version and whether image optimization applies.",
+      "Affected ranges are 10.0.0 through 15.5.27 and greater than 16.0.0 through 16.4.0. Patched releases are 15.5.28 and 16.4.1. Verify the exact deployed version and whether image optimization applies.",
     technology: "Next.js",
     status: "Patch verification required",
     publishedAt: "2026-10-14",
@@ -30,11 +34,15 @@ export const DEMO_ALERTS: readonly RadarAlert[] = [
   },
   {
     id: "CVE-2026-119348",
+    affectedRanges: [
+      { upper: { version: "15.5.28", inclusive: true } },
+      { lower: { version: "16.0.0", inclusive: true }, upper: { version: "16.4.4", inclusive: true } },
+    ],
     kind: "cve",
     severity: "moderate",
     title: "Cross-client response disclosure in self-hosted Next.js",
     summary:
-      "The advisory affects versions through 15.5.28 in a specific self-hosted response-forwarding scenario; version 15.5.29 is patched. Confirm the full version and deployment conditions.",
+      "Affected ranges are through 15.5.28 and 16.0.0 through 16.4.4 in a specific self-hosted response-forwarding scenario. Patched releases are 15.5.29 and 16.4.5. Confirm the full version and deployment conditions.",
     technology: "Next.js",
     status: "Patch verification required",
     publishedAt: "2026-11-03",

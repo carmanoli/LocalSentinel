@@ -47,7 +47,12 @@ export async function runDemoOrchestration(
     };
     publishStatuses();
 
-    return { alerts, statuses, models };
+    return {
+      alerts: alerts.filter((alert) => alert.verification !== "unverified"),
+      unverifiedAlerts: alerts.filter((alert) => alert.verification === "unverified"),
+      statuses,
+      models,
+    };
   } catch (error) {
     statuses = {
       cloudStatus: statuses.cloudStatus === "running" ? "failed" : statuses.cloudStatus,

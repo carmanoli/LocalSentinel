@@ -4,6 +4,11 @@ export type AlertSeverity = "critical" | "high" | "moderate" | "low" | "info";
 export type AlertKind = "cve" | "outage";
 export type AgentStatus = "idle" | "running" | "complete" | "failed";
 
+export interface AffectedVersionRange {
+  lower?: { version: string; inclusive: boolean };
+  upper?: { version: string; inclusive: boolean };
+}
+
 export interface RadarAlert {
   id: string;
   kind: AlertKind;
@@ -15,6 +20,9 @@ export interface RadarAlert {
   publishedAt: string;
   sourceLabel: string;
   sourceUrl: string;
+  affectedRanges?: readonly AffectedVersionRange[];
+  matchedVersions?: string[];
+  verification?: "affected" | "unverified";
 }
 
 export interface AgentStatuses {
@@ -31,6 +39,7 @@ export interface AgentModelRoutes {
 
 export interface DemoScanResult {
   alerts: RadarAlert[];
+  unverifiedAlerts: RadarAlert[];
   statuses: AgentStatuses;
   models: AgentModelRoutes;
 }

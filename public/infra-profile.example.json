@@ -3,6 +3,6 @@
     { "name": "AWS", "region": "eu-west-1" },
     { "name": "Azure", "region": "westeurope" },
     { "name": "Ubuntu", "version": "24.04" },
-    { "name": "Next.js", "version": "15" }
+    { "name": "Next.js", "version": "16.4.6" }
   ]
 }

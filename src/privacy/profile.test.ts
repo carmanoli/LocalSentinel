@@ -80,12 +80,12 @@ describe("sanitizeProfileForQuery", () => {
     ).toThrow(ProfileValidationError);
   });
 
-  it("rejects address-like data even when placed in a version field", () => {
-    expect(() =>
+  it("omits invalid versions without leaking their contents", () => {
+    expect(
       sanitizeProfileForQuery({
         technologies: [{ name: "Ubuntu", version: "24.04-10.0.14.22" }],
       }),
-    ).toThrow(ProfileValidationError);
+    ).toEqual(["Ubuntu"]);
   });
 
   it("returns an empty query when no technologies are configured", () => {
@@ -101,7 +101,7 @@ describe("sanitizeProfileForQuery", () => {
       "AWS eu-west-1",
       "Azure westeurope",
       "Ubuntu 24.04",
-      "Next.js 15",
+      "Next.js 15.5.27",
     ]);
     expect(getBlockedFieldCategories(profile)).toEqual([
       "internal_hostname",

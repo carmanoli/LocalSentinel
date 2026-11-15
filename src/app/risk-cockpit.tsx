@@ -38,6 +38,7 @@ export function RiskCockpit() {
     initialAgentStatuses(),
   );
   const [alerts, setAlerts] = useState<RadarAlert[]>([]);
+  const [unverifiedAlerts, setUnverifiedAlerts] = useState<RadarAlert[]>([]);
   const [routing, setRouting] = useState<ModelRouting>(INITIAL_ROUTING);
   const [profileLabel, setProfileLabel] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -84,6 +85,7 @@ export function RiskCockpit() {
         setStatuses,
       );
       setAlerts(result.alerts);
+      setUnverifiedAlerts(result.unverifiedAlerts);
     } catch {
       setErrorMessage("The local demo scan could not be completed.");
     } finally {
@@ -104,6 +106,7 @@ export function RiskCockpit() {
     setProfileLabel(label);
     setStatuses(initialAgentStatuses());
     setAlerts([]);
+    setUnverifiedAlerts([]);
 
     const result = await runDemoOrchestration(
       safeQuery,
@@ -111,6 +114,7 @@ export function RiskCockpit() {
       setStatuses,
     );
     setAlerts(result.alerts);
+    setUnverifiedAlerts(result.unverifiedAlerts);
   }
 
   function reportError(error: unknown) {
@@ -128,6 +132,7 @@ export function RiskCockpit() {
         : "The local profile could not be processed.",
     );
     setAlerts([]);
+    setUnverifiedAlerts([]);
   }
 
   const models = getAgentModelRoutes(routing);
@@ -170,10 +175,9 @@ export function RiskCockpit() {
             {alerts.map((alert) => (
               <AlertCard alert={alert} key={alert.id} />
             ))}
-            {hasProfile && alerts.length === 0 && (
+            {hasProfile && !isLoading && alerts.length === 0 && (
               <div className="rounded-lg border border-slate-800 bg-slate-950/50 p-4 text-sm text-slate-400">
-                No demo CVEs or provider incidents matched the loaded
-                technologies.
+                Nenhum dos avisos analisados corresponde às versões fornecidas.
               </div>
             )}
             {!hasProfile && (
@@ -190,6 +194,15 @@ export function RiskCockpit() {
           </p>
         </Panel>
 
+          {unverifiedAlerts.length > 0 && (
+            <section className="mt-5" aria-labelledby="unverified-heading">
+              <h2 id="unverified-heading" className="text-lg font-semibold">Por verificar</h2>
+              <p className="mt-2 text-sm text-slate-400">A versão está ausente, incompleta ou inválida, ou o aviso não tem intervalos verificáveis. Forneça uma versão exata e consulte a fonte oficial.</p>
+              <div className="mt-3 grid gap-3 xl:grid-cols-3">
+                {unverifiedAlerts.map((alert) => <AlertCard key={alert.id} alert={alert} />)}
+              </div>
+            </section>
+          )}
         </section>}
         {view === "Privacy & Profile Inspector" && <div className="privacy-view">        <Panel
           eyebrow="Local only"
@@ -475,6 +488,8 @@ function AlertCard({ alert }: { alert: RadarAlert }) {
         {alert.title}
       </h3>
       <p className="mt-2 text-xs leading-5 text-slate-400">{alert.summary}</p>
+      {alert.verification === "unverified" && <p className="mt-2 text-xs text-amber-300">Por verificar</p>}
+      {!!alert.matchedVersions?.length && <p className="mt-2 text-xs text-red-200">Versões afetadas no perfil · {alert.matchedVersions.join(", ")}</p>}
       <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800 pt-2">
         <span className="text-[11px] text-slate-500">
           {alert.technology} · {alert.status}
